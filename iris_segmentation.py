@@ -1,58 +1,3 @@
-def image(img, *threshVal):   
-    
-    from skimage.io import imshow, imread
-    from skimage.color import rgb2gray
-    import numpy as np
-
-    bmpImg = imread(img);
-    greyScaleImg = rgb2gray(bmpImg);   # Y = 0.2125 R + 0.7154 G + 0.0721 B is used
-    #print(img)
-    row=greyScaleImg.shape[0];
-    col=greyScaleImg.shape[1];
-    binaryImg=np.zeros((row,col));
-    
-    
-    # create binary image
-    # create zero array with correct shape
-    rowCount=0;
-    colCount=0;
-
-    if threshVal:
-        threshholdVal=threshVal;
-        #print("yes there is threshval")
-
-
-
-        for rowVal in greyScaleImg:
-            for pixel in rowVal:
-                if pixel<threshholdVal:
-                    binaryImg[rowCount][colCount]=1;
-                colCount+=1;
-            colCount=0;
-            rowCount+=1;
-        #print(binaryImg) 
-    else:
-        pass
-
-    return (greyScaleImg, binaryImg, bmpImg, (row,col));
-
-    
-'''
-function: img(img, threshVal)
-
-parameters
-img: bmp image file
-threshVal: threhold value betwee 0 and 1 for binary image creation
-
-Returns
-output: (grey scale image array, binary image, original bmp image array, (row, col))
-grey scale image array is: (0.2125 R + 0.7154 G + 0.0721 B)/255 a percentage of 255
-(row, col) is a tuple of the size of image array
-'''
-
-
-
-
 def cannyEdge(greyImg):
     from skimage.feature import canny
     edgeImg=canny(greyImg, sigma=2)  # report: explain canny and show edge detection for different values og sigma
@@ -325,6 +270,30 @@ def irisRectangle(greyScaleImg, tupleValIris, tupleValPupilAdj):
     
     return irisImg
     
+
+def normalizeIrisImg(irisRectImg, resolution, thresholdVal):
+    from pupil_localization import readImage, binImg
+    from skimage.transform import resize
+    from skimage.exposure import histogram
+    import matplotlib.pyplot as plt
+    from skimage import exposure
+    import numpy as np
+    
+    # step 1: greyscale
+    images=readImage(irisRectImg);
+    greyImage=images[0];
+    binImage=binImg(greyImage)[0];
+    
+    ternImage=np.empty([resolution[0],resolution[1]]);
+    originalResolution=images[2];
+    
+    #step 2: resize
+    resizedImage = resize(greyImage,resolution)
+
+    # histogram equlization
+    equalizedImage = exposure.equalize_hist(resizedImage);
+
+    return equalizedImage
 
 
 
