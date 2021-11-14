@@ -13,6 +13,26 @@ def readImage(img):
     return (greyScaleImg, bmpImg, (row,col));
 
 
+'''
+Reads raw eye image and converts to grey scale and calculates the dimensions
+
+Parameters
+----------
+img
+    RGB or bmp image
+
+
+Returns
+-------
+greyScaleImg
+    single value per pixel value range is 0-1
+bmpImg 
+    original image
+(row, col)
+    row and column size of the orginal image
+
+'''
+
 
 
 def binImg(greyScaleImg, threshold):
@@ -44,7 +64,24 @@ def binImg(greyScaleImg, threshold):
     return (binaryImgNormalized, binaryImg255)
 
 
+'''
+Converts greyscale image to binary image
 
+Parameters
+----------
+greyScaleImg
+    grey scale image pixel value ranging from 0-1
+threshold
+    threshold value for the binary image
+    
+Returns
+-------
+binaryImgNormalized
+    binary image with states: 0 and 1
+binaryImg255
+    binary image with states: 0 and 255. This is for graphical purposes since 0 and 1 does not plot well
+
+'''
 
 
 
@@ -60,7 +97,22 @@ def turnToBlobs(binaryImage, diskRad):
     return morphedArray
 
 
+'''
+Converts white pixel elements in binary elements into blobs for labelling
 
+Parameters
+----------
+binaryImage
+    binary image with state 0 to 1
+diskRad
+    the size in pixels of the radius of the morphing operation (dilation and then erosion)
+    
+Returns
+-------
+morphedArray
+    image of the binary image with morphed elements with pixel value states either 0 to 1
+
+'''
 
 
 
@@ -115,21 +167,33 @@ def returnPupilBlob(image):
 
 
 
+'''
+Returns the binary image with only the pupil element
+
+Parameters
+----------
+image
+    morphed image from the turnToBlobs()
+
+Returns
+-------
+finalBinArray
+    binary image with only the pupil element pixel value range 0-1
+'''
 
 
 
-
-def pupilCircle(pupilBlob):
+def pupilCircle(pupilBlob, sigma=3, low_thresh=0, high_thresh=1, radiusRangeStart=0, radiusRangeEnd=70):
 
     from skimage.feature import canny
     import numpy as np
-    edgeImg=canny(pupilBlob, sigma=3, low_threshold=0, high_threshold=1)
-    
-    # hough transform the edge image
-
     from skimage.transform import hough_circle
+    
+    
+    edgeImg=canny(pupilBlob, sigma, low_thresh, high_thresh)
+
     # radius range
-    try_radii = np.arange(1, 70)
+    try_radii = np.arange(radiusRangeStart, radiusRangeEnd)
     accumulatorMatrix = hough_circle(edgeImg, try_radii)  # returns a 3D accumulatorMatrix: a (240) x b (320) x radius range (45)
 
     # find the index number with the highest accumulator value
@@ -139,14 +203,34 @@ def pupilCircle(pupilBlob):
 
     radius, r, c = np.unravel_index(index, accumulatorMatrix.shape);
 
-    #print("The radius is: " + str(radius));
-    #print("The row val for center of circle: "+str(r));
-    #print("The col val for center of circle: "+str(c));
     
     return (radius,r,c)
 
 
 
+'''
+Returns the circle parameters of the pupil: radius and center coordinates
 
+Parameters
+----------
+pupilBlob
+    binary image with pupil element only pixel values 0-1
+sigma : default = 3
+    canny edge detection sigma value is higher for less sensitive edge detection
+low_thresh
+    pixel value in low pixel value range in image (0)
+high_thresh
+    pixel value in high pixel value range in image (1)
+radiusRangeStart
+    start radius value for Hough transform
+radiusRangeEnd
+    end radius value for Hough transform
+
+
+Returns
+-------
+(radius, r, c)
+    tuple with the radius, row and column of the pupil circle
+'''
 
 
