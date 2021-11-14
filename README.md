@@ -16,7 +16,7 @@ The system is divided into 3 stages:
 - pupilCircle()
 
 
-2.) Iris segmentation has 6 functions
+2.) Iris segmentation has 7 functions
 
 - cannyEdge()
 - sweepingLine()
@@ -24,7 +24,13 @@ The system is divided into 3 stages:
 - pupilIrisCircle()
 - contourCrop()
 - irisRectangle()
+- normalizeIrisImg()
+
+3.) Iris code and matching has 4 functions
+
+- ternaryImg()
+- generateIrisCode()
+- match()
 
 
-3.) Iris code and matching has
-
+more detailed instructions on how to use the functions to come soon
