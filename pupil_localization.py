@@ -183,14 +183,14 @@ finalBinArray
 
 
 
-def pupilCircle(pupilBlob, sigma=3, low_thresh=0, high_thresh=1, radiusRangeStart=0, radiusRangeEnd=70):
+def pupilCircle(pupilBlob, sig=3, low_thresh=0, high_thresh=1, radiusRangeStart=0, radiusRangeEnd=70):
 
     from skimage.feature import canny
     import numpy as np
     from skimage.transform import hough_circle
     
     
-    edgeImg=canny(pupilBlob, sigma, low_thresh, high_thresh)
+    edgeImg=canny(pupilBlob, sigma=sig, low_threshold=low_thresh, high_threshold=high_thresh)
 
     # radius range
     try_radii = np.arange(radiusRangeStart, radiusRangeEnd)
@@ -215,15 +215,15 @@ Parameters
 ----------
 pupilBlob
     binary image with pupil element only pixel values 0-1
-sigma : default = 3
+sig : default = 3
     canny edge detection sigma value is higher for less sensitive edge detection
-low_thresh
+low_thresh : default = 0
     pixel value in low pixel value range in image (0)
-high_thresh
+high_thresh : default = 1
     pixel value in high pixel value range in image (1)
-radiusRangeStart
+radiusRangeStart : default = 0
     start radius value for Hough transform
-radiusRangeEnd
+radiusRangeEnd : default = 70
     end radius value for Hough transform
 
 

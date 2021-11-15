@@ -1,24 +1,29 @@
-def cannyEdge(greyImg):
+def cannyEdge(greyImg, sig=2):
     from skimage.feature import canny
-    edgeImg=canny(greyImg, sigma=2)  # report: explain canny and show edge detection for different values og sigma
+    edgeImg=canny(greyImg, sigma=sig)  # report: explain canny and show edge detection for different values og sigma
     
     return edgeImg;
 
 
 '''
-function: cannyEdge(greyImg)
+Converts grey scale eye image into edge image
 
-parameter
-binImg: a binary image of value 0 or 1
-
-returns
-
-
+Parameters
+----------
+greyImg
+    grey scale image of eye image pixel value range 0-1
+sig : default = 2
+    sigma value for edge detection. Higher the value, lower the sensitivity of edge detection
+    
+Returns
+-------
+edgeImg
+    a binary edge image of the eye
 '''
 
 
 
-def sweepingLine(tupleVal,angle):
+def sweepingLine(tupleVal,angle, multiple=3):
     import numpy as np
     import math
     
@@ -44,7 +49,7 @@ def sweepingLine(tupleVal,angle):
         sweepingLine.append([rowCenter+rowVal,colCenter+i+1]);  # plus 1 because it is pixel to the right of current one
 
         # step 2: do same for row
-    maxRow=3*radius*math.sin(2*math.pi*(angle/360));  # in radians
+    maxRow=multiple*radius*math.sin(2*math.pi*(angle/360));  # in radians
     # round up
     maxRow = math.ceil(maxRow);
     
@@ -62,21 +67,29 @@ def sweepingLine(tupleVal,angle):
 
     return sweepingLine
 
+
 '''
-function sweepingLine(tupleVal,angle)
+Creates a straight line of length multiple multiplied by pupil radius from center of pupil at given angle 
 
-parameter:
-tupleVal: (radius, rowCenter, colCenter) of the pupil center
-angle: angle of the sweeping line to be generated
+Parameters
+----------
+tupleVal
+    (radius, rowCenter, colCenter) of the pupil center
+angle
+    angle in degrees. 0 degrees at the positive x axis and positive angles in clockwise direction
+multiple
+    constant multiplied by the pupil radius for sweeping line. This value must be larger than the iris border
 
-returns: array of dimension nx2 where n is the number of pixels in the sweepingline and 2 is rowxcol of sweeping line pixel
+Returns
+-------
+swepingLine
+    2D array of [row, col] all pixels in the sweepingline
 '''
 
 
 
 
-
-def sweepIris(cannyImg, tupleVal):
+def sweepIris(cannyImg, tupleVal, startAngle=0, endAngle=45):
     
     import numpy as np
     import copy
@@ -85,11 +98,10 @@ def sweepIris(cannyImg, tupleVal):
     image=np.array(cannyImg);
     sweep=[];
     intersectArray=[];
-    radiusArray=[];   #keeps radius of border crossings
+    irisRadiusArray=[];   #keeps radius of border crossings
     
     
-    # 0 degrees to -45 degrees
-    for angle in range(45):
+    for angle in range(startAngle, endAngle, 1):
         #print(angle)
         sweep=sweepingLine(tupleVal, angle);
         
@@ -112,16 +124,16 @@ def sweepIris(cannyImg, tupleVal):
             irisIntersectArray.remove(pixel);
             #print("removed")
         else:
-            radiusArray.append(radius);
+            irisRadiusArray.append(radius);
 
         
     # return iris border radius average
     radiusSum=0;
     radiusAverage=0;
-    for radius in radiusArray:
+    for radius in irisRadiusArray:
         radiusSum+=radius;
     try:
-        radiusAverage=round(radiusSum/len(radiusArray));
+        radiusAverage=round(radiusSum/len(irisRadiusArray));
     except(ZeroDivisionError):
         radiusAverage="no intersections"
         pass
@@ -131,15 +143,49 @@ def sweepIris(cannyImg, tupleVal):
 
 
 
+'''
+sweeps an edge image with a sweeping line and records edge intersections over angle range
+
+Parameters
+----------
+cannyImg
+    edge image of eye
+tupleVal
+    (radius, row, column) of the pupil
+startAngle
+    angle to start the sweep (0 at positive x axis and positive in clockwise direction)
+endAngle
+    angle to end the sweep (0 at positive x axis and positive in clockwise direction)
+    
+Returns
+-------
+image
+    numpy array version of canny iamge
+intersectArray
+    an array of all intersection pixels between the edge image and the sweeping line for the angle range
+irisIntersectArray
+    an array of intersection pixels between iris border and the sweeping line (this is done by removing any intersections below 1.2 times pupil radius)
+irisRadiusArray
+    radius of all intersections with 1.2 times pupil radius removed
+radiusAverage
+    average radius value of the irisRadiusArray values
+'''
+
+
+
+
 def pupilIrisCircle(RGBImage,tupleVal,irisRadius):
     
     # create binary image of iris circle contour
     from skimage.draw import circle_perimeter  # library for drawing circle perimeter
     import copy
     import numpy as np
+    from pupil_localization import readImage
     
-    rows=240;
-    cols=320;
+    imageRead = imageRead(RGBImage);
+    
+    rows=imageRead[2][0];
+    cols=imageRead[2][1];
     copyRGB=copy.deepcopy(RGBImage);
 
     # initialize the empty arrays
@@ -160,23 +206,28 @@ def pupilIrisCircle(RGBImage,tupleVal,irisRadius):
 
 
 '''
-function pupilIrisCircle()
+For plotting the iris circle and the pupil circle for illustration purposes
 
-Input parameters
-RGBImage: bmp image in the database. It acts like RGB image
-tupleVal: (radius,row,col) of the pupil
-irisRadius: iris radius
+Parameters
+----------
+RGBImage
+    original eye image
+tupleVal
+    (radius,row,col) of the pupil
+irisRadius
+    iris radius
 
 Returns
-binImageIrisPupil: binary array with shape==image shape and iris pupil border is set to 1
-binImagePupil: pupil border
-binImageIris: iris border
-copyRGB: the original bmp image with the pupil iris border overlay in green: (0,255,0)
-
+-------
+binImageIrisPupil
+    binary array with iris and pupil border
+binImagePupil
+    binary image with pupil border
+binImageIris
+    binary image with iris border
+copyRGB
+    original RGB image with the pupil and iris border overlay in green: (0,255,0)
 '''
-
-
-
 
 
 
@@ -217,9 +268,29 @@ def contourCrop(greyScaleImage, tupleVal):
     return (circleCropped,copyImg)
 
 
+'''
+Circular crop of image
+
+Parameters
+----------
+greyScaleImage
+    greyScale eye image
+tupleVal
+    (radius, row, column) of circle to crop
+    
+Returns
+-------
+circleCropped
+    circle image extracted out (square image of size: radius+1 by radius+1)
+copyImg
+    original grey scale image without the circleCropped
+
+'''
 
 
-def irisRectangle(greyScaleImg, tupleValIris, tupleValPupilAdj):
+
+
+def irisRectangle(greyScaleImg, tupleValIris, tupleValPupil, noiseSigma=2, diskSize=10):
     
     from iris_segmentation import contourCrop
     
@@ -233,21 +304,25 @@ def irisRectangle(greyScaleImg, tupleValIris, tupleValPupilAdj):
     #from skimage.io import imshow
 
     pupilAndIris=contourCrop(greyScaleImg,tupleValIris)[0];
-    iris=contourCrop(pupilAndIris,tupleValPupilAdj)[1];
+    # pupil center is the center of the new square image: row x col = irisradius x irisradius
+    pupilParam = list(tupleValPupil);
+    pupilParam[1] = tupleValIris[0]; # row of pupil center is iris radius
+    pupilParam[2] = tupleValIris[0]; # col of pupil center is iris radius
+    pupilParam = tuple(pupilParam);
+    iris=contourCrop(pupilAndIris,pupilParam)[1];
     #imshow(iris)
     
 
 
     polarImage, ptSettings = polarTransform.convertToPolarImage(iris, initialRadius=tupleValPupilAdj[0],finalRadius=tupleValIris[0], initialAngle=0,finalAngle=2 * np.pi);
-    # canny
 
 
     copyImg=copy.deepcopy(polarImage);
     # it is a binary image
-    edgeImg=canny(copyImg,sigma=2);
+    edgeImg=canny(copyImg,sigma=noiseSigma);
 
     # apply morphological operators to images
-    footprint=disk(10);
+    footprint=disk(diskSize);
 
     dilatedArray = dilation(edgeImg, footprint);
     morphedArray=erosion(dilatedArray, footprint);
@@ -269,10 +344,36 @@ def irisRectangle(greyScaleImg, tupleValIris, tupleValPupilAdj):
     #imshow(irisImg);
     
     return irisImg
+
+
+'''
+Turn iris image to rectangular image with noise features set to 0
+
+Parameters
+----------
+greyScaleImg
+    grey scale image of the iris image
+tupleValIris
+    (radius, row, column) of iris
+tupleValPupil
+    (radius, row, column) of pupil
+noiseSigma : default = 2
+    sigma value for edge detection of noise element
+diskSize : default = 10
+    disk radius for morphological operation for noise element blob creation
+
+Return
+------
+irisImg
+    unwrapped image of iris (rectangular) with noise elements set to pixel value 0
+
+'''
+
+
     
 
-def normalizeIrisImg(irisRectImg, resolution, thresholdVal):
-    from pupil_localization import readImage, binImg
+def normalizeIrisImg(irisRectImg, resolution):
+    from pupil_localization import readImage
     from skimage.transform import resize
     from skimage.exposure import histogram
     import matplotlib.pyplot as plt
@@ -282,10 +383,6 @@ def normalizeIrisImg(irisRectImg, resolution, thresholdVal):
     # step 1: greyscale
     images=readImage(irisRectImg);
     greyImage=images[0];
-    binImage=binImg(greyImage)[0];
-    
-    ternImage=np.empty([resolution[0],resolution[1]]);
-    originalResolution=images[2];
     
     #step 2: resize
     resizedImage = resize(greyImage,resolution)
@@ -295,6 +392,22 @@ def normalizeIrisImg(irisRectImg, resolution, thresholdVal):
 
     return equalizedImage
 
+'''
+normalize rectangular iris image: resize, equalize image
+
+Parameters
+----------
+irisRectImg
+    rectangular iris image from the irisRectangle()
+resolution
+    resolution of the desired output image in pixels: row by col
+
+Returns
+-------
+equalizedImage
+    grey scale image with value 0-1 that is resized and histogram equalized
+
+'''
 
 
 
