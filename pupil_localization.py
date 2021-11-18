@@ -183,7 +183,7 @@ finalBinArray
 
 
 
-def pupilCircle(pupilBlob, sig=3, low_thresh=0, high_thresh=1, radiusRangeStart=0, radiusRangeEnd=70):
+def pupilCircle(pupilBlob, sig=3, low_thresh=0, high_thresh=1, radiusRangeStart=1, radiusRangeEnd=70):
 
     from skimage.feature import canny
     import numpy as np
