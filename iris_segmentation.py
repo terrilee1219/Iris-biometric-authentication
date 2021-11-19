@@ -139,7 +139,7 @@ def sweepIris(cannyImg, tupleVal, startAngle=0, endAngle=45):
         pass
 
             
-    return (image,intersectArray,irisIntersectArray,radiusArray,radiusAverage)
+    return (image,intersectArray,irisIntersectArray,irisRadiusArray,radiusAverage)
 
 
 
@@ -182,11 +182,11 @@ def pupilIrisCircle(RGBImage,tupleVal,irisRadius):
     import numpy as np
     from pupil_localization import readImage
     
-    imageRead = imageRead(RGBImage);
+    imageRead = readImage(RGBImage);
     
     rows=imageRead[2][0];
     cols=imageRead[2][1];
-    copyRGB=copy.deepcopy(RGBImage);
+    copyRGB=copy.deepcopy(imageRead[1]);
 
     # initialize the empty arrays
     binImageIrisPupil = np.zeros((rows,cols), dtype=bool);
@@ -293,11 +293,9 @@ copyImg
 def irisRectangle(greyScaleImg, tupleValIris, tupleValPupil, noiseSigma=2, diskSize=10):
     
     from iris_segmentation import contourCrop
-    
     import polarTransform
     import numpy as np
     import matplotlib.pyplot as plt
-    
     from skimage.feature import canny
     import copy
     from skimage.morphology import erosion, dilation, disk
@@ -314,7 +312,7 @@ def irisRectangle(greyScaleImg, tupleValIris, tupleValPupil, noiseSigma=2, diskS
     
 
 
-    polarImage, ptSettings = polarTransform.convertToPolarImage(iris, initialRadius=tupleValPupilAdj[0],finalRadius=tupleValIris[0], initialAngle=0,finalAngle=2 * np.pi);
+    polarImage, ptSettings = polarTransform.convertToPolarImage(iris, initialRadius=tupleValPupil[0],finalRadius=tupleValIris[0], initialAngle=0,finalAngle=2 * np.pi);
 
 
     copyImg=copy.deepcopy(polarImage);
@@ -379,13 +377,10 @@ def normalizeIrisImg(irisRectImg, resolution):
     import matplotlib.pyplot as plt
     from skimage import exposure
     import numpy as np
+
     
-    # step 1: greyscale
-    images=readImage(irisRectImg);
-    greyImage=images[0];
-    
-    #step 2: resize
-    resizedImage = resize(greyImage,resolution)
+    #resize
+    resizedImage = resize(irisRectImg,resolution)
 
     # histogram equlization
     equalizedImage = exposure.equalize_hist(resizedImage);
