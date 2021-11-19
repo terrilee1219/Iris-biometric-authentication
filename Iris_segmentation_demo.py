@@ -6,7 +6,7 @@ from iris_segmentation import *
 from pupil_localization import *
 import matplotlib.pyplot as plt
 
-def irisRectImage(pupilTuple, image, resolution):
+def irisRectImage(pupilTuple, image, resolution=(490,50)):
 
     # read eye image
     eyeImg = readImage(image);
