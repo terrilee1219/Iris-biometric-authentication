@@ -23,7 +23,7 @@ A demo image is uploaded for use for the demo. They are named:
 - kelvinr1.bmp
 
 The first step is pupil localization
-1.) Pupil localization has 5 functions
+Pupil localization has 5 functions
 
 - readImage()
 - binImg()
@@ -35,7 +35,7 @@ An bmp or RGB eye image enters this stage and the pupil parameters are outputted
 
 
 The next step is iris segmentation:
-2.) Iris segmentation has 7 functions
+Iris segmentation has 7 functions
 
 - cannyEdge()
 - sweepingLine()
@@ -48,7 +48,7 @@ The next step is iris segmentation:
 The output from this stage is a normalized (resized, noise removed) rectangular iris image. Iris_segmentation_demo shows how to use the functions.
 
 The next step is iris code generation and matching.
-3.) Iris code and matching has 4 functions
+Iris code and matching has 4 functions
 
 - ternaryImg()
 - generateIrisCode()
