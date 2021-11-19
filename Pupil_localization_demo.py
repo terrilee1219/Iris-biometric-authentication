@@ -15,3 +15,18 @@ def pupilParam(image):
     circleParam = pupilCircle(pupilBlobImg);
     
     return circleParam
+
+
+'''
+Takes in raw eye image (RGB or bmp) and outputs the pupil parameters in tuple: (radius, center_row, center_col)
+
+Paramters
+---------
+image
+    RGB or bmp eye image
+
+Returns
+-------
+circleParam
+    tuple value of the pupil circle parameters: (radius, center_row, center_col)
+'''
