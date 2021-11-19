@@ -1,16 +1,20 @@
-
-
-def ternaryImg(equalizedImg, noisyPercentile):
+def ternaryImg(normalizedImg, noisyPercentile=20):
+    
+    import numpy as np
+    imageDimensionRow = normalizedImg.shape[0];
+    imageDimensionCol = normalizedImg.shape[1];
+    
     
     # noisyPercentile = 20 
-    p5a = np.percentile(equalizedImage, noisyPercentile);
+    p5a = np.percentile(normalizedImg, noisyPercentile);
+    ternImage=np.empty([imageDimensionRow,imageDimensionCol]);
 
     rowCount=0;
     colCount=0;
     noiseCount=0;
     topCount=0;
     botCount=0;
-    for row in equalizedImage:
+    for row in normalizedImg:
         for pixel in row:
             if pixel<p5a:
                 ternImage[rowCount][colCount]=128;
@@ -27,11 +31,30 @@ def ternaryImg(equalizedImg, noisyPercentile):
     
     return ternImage
 
+'''
+create ternary image: image with 3 states
+
+Parameters
+----------
+normalizedImg
+    normalized (resized, noise removed), equalized (histogram equalization), rectangular iris image
+noisyPercentile: default=20
+    the bottom x percentile(%) where the noise exists
+
+Returns
+-------
+ternImage
+    image with pixel range (0-255) with 3 states: 0 (iris 1), 128 (noise), 255 (iris 2)
+
+'''
+
 
 
 
 def generateIrisCode(ternImage):
-     
+    
+    import numpy as np
+    
     # step 5: divide the image into tiles
     # 49 pixels per segment: 10 row
     # 10 pixels: 5 col 
